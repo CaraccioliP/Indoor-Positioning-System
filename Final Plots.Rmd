@@ -1,0 +1,97 @@
+---
+title: "IPS System"
+author: "Pascal Caraccioli"
+date: "2023-12-05"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(kableExtra)
+library(tidyverse)
+library(here)
+library(class)
+library(ggplot2)
+```
+
+
+
+
+```{r figure_1, fig.align = "center", fig.cap= 'Flooplan location. Access points are squares. Grey dots are offline data locations and black dots are online data locations.', out.width="50%", out.height="50%"}
+
+knitr::include_graphics("floorplan.jpg") 
+```
+
+
+```{r}
+
+offline = read.csv("clean_offline.csv", header = T)
+```
+
+
+```{r fig_2, echo=FALSE, message = FALSE,  echo=FALSE, message =FALSE, fig.align = "center", fig.cap= 'Scatter-plot of signal vs distance grouped by access point. Signal strength is inversely related to distance. Some access point have consistent lower signal strengths', out.width="80%", out.height="80%", warning=FALSE, message =FALSE}
+
+ggplot(offline, aes(x=dist, y=signal)) + 
+  geom_point() + 
+  facet_wrap(~mac) +
+  geom_smooth()  + 
+  theme_minimal() +
+  xlab('Distance') + 
+  ggtitle("Signal strength by distance between access point and hand-held device")
+```
+```{r fig_3, echo=FALSE, message =FALSE, fig.align = "center", fig.cap= 'Box-plot of signal strength depending on orientation, grouped by access point in a random location', out.width="80%", out.height="80%", warning=FALSE, message =FALSE}
+
+
+one_loc = offline %>% filter(posX==0)
+one_loc_2 = offline %>% filter(posY==0)
+
+part_plot= ggplot(offline, aes(as.factor(orientation), signal)) + geom_boxplot(outlier.colour = 'skyblue', alpha = 0.4) + facet_grid(~mac) + theme_bw() + theme(axis.text.x=element_text(angle = 90))  +xlab('orientation') + ggtitle("Signal strength by orientation grouped by access point at a random location")
+
+part_plot
+```
+
+# 5. Methods
+
+# 5.1 XGBoost (SML)
+
+Supervised machine learning is  We conduct the development of the IPS using one **strickly speaking, knn is also supervised ml** supervised machine learning algorithm: eXtreme Gradient Boosting (XGBoost; Chen and Guestrin, 2016). XGBoost is a decision-tree approach popularized on several machine learning competitions because of its flexibility and accuracy.
+
+*See python script**
+
+# Results
+```{r results_ML, warning=FALSE}
+mac_locs = readr::read_table("accessPointLocations.txt")
+results = read.csv("XGB_predictions.csv")
+
+ggplot(results) + geom_point(aes(test_X,test_Y, color = "Real Location"), size = 3) + geom_point(aes(pred_X, pred_Y, color = "Predicted Location"),  size = 3)  + theme_minimal() + ggtitle("XGBoost Predicted and Real Locations") +xlab("x-coordinate") +ylab("y-coordinate") + labs(color='Location')  +geom_segment(aes(x = test_X, y = test_Y, xend = pred_X, yend = pred_Y)) + geom_point(data = mac_locs, aes(x,y), size = 3, shape = 15)
+
+ggsave("pred_locs_lines.png", width = 30, height = 20, units = "cm", dpi = 300, bg = "white")
+
+
+
+ggplot(results) + geom_point(aes(test_X,test_Y, color = "Real Location"), size = 3) + geom_point(aes(pred_X, pred_Y, color = "Predicted Location"),  size = 3)  + theme_minimal() + ggtitle("XGBoost Predicted and Real Locations") +xlab("x-coordinate") +ylab("y-coordinate") + labs(color='Location') + geom_point(data = mac_locs, aes(x,y), size = 3, shape = 15)
+ggsave("pred_locs.png", width = 30, height = 20, units = "cm", dpi = 300, bg = "white")
+# ggplot(toplot2) + geom_point(aes(posX, posY)) + geom_point(aes(2.5, -0.8, color = "red"), show.legend = F) + theme(legend.position="none") + theme_minimal() + ggtitle("All Location of hand-held device and One Access Point") +xlab("x-coordinate") +ylab("y-coordinate")
+
+#they are so beautiful <3
+```
+
+# 5.2 KNN
+
+#Technically also a form of Supervised ML
+
+```{r results_ML, warning=FALSE}
+mac_locs = readr::read_table("accessPointLocations.txt")
+results = read.csv("KNN_predictions.csv")
+
+ggplot(results) + geom_point(aes(Knn_test_X,Knn_test_Y, color = "Real Location"), size = 3) + geom_point(aes(Knn_pred_X, Knn_pred_Y, color = "Predicted Location"),  size = 3)  + theme_minimal() + ggtitle("KNN Predicted and Real Locations") +xlab("x-coordinate") +ylab("y-coordinate") + labs(color='Location')  +geom_segment(aes(x = Knn_test_X, y = Knn_test_Y, xend = Knn_pred_X, yend = Knn_pred_Y)) + geom_point(data = mac_locs, aes(x,y), size = 3, shape = 15)
+
+ggsave("knn_pred_locs_lines.png", width = 30, height = 20, units = "cm", dpi = 300, bg = "white")
+
+
+
+ggplot(results) + geom_point(aes(Knn_test_X,Knn_test_Y, color = "Real Location"), size = 3) + geom_point(aes(Knn_pred_X, Knn_pred_Y, color = "Predicted Location"),  size = 3)  + theme_minimal() + ggtitle("KNN Predicted and Real Locations") +xlab("x-coordinate") +ylab("y-coordinate") + labs(color='Location') + geom_point(data = mac_locs, aes(x,y), size = 3, shape = 15)
+ggsave("knn_pred_locs.png", width = 30, height = 20, units = "cm", dpi = 300, bg = "white")
+# ggplot(toplot2) + geom_point(aes(posX, posY)) + geom_point(aes(2.5, -0.8, color = "red"), show.legend = F) + theme(legend.position="none") + theme_minimal() + ggtitle("All Location of hand-held device and One Access Point") +xlab("x-coordinate") +ylab("y-coordinate")
+
+```
