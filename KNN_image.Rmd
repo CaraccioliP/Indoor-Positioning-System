@@ -1,0 +1,19 @@
+---
+title: "KNN_images"
+author: "Wasabees"
+date: "2023-12-07"
+output: html_document
+---
+## Mathematical Representation
+
+### Distance Calculation (Euclidean Distance):
+
+\[ d(x, y) = \sqrt{\sum_{i=1}^{n} (x_i - y_i)^2} \]
+
+### Classification Rule:
+
+\[ \hat{y} = \text{argmax}_c \sum_{i=1}^{k} I(y_i = c) \]
+
+### Regression Rule:
+
+\[ \hat{y} = \frac{1}{k} \sum_{i=1}^{k} y_i \]
