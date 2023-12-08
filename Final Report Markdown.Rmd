@@ -1,0 +1,113 @@
+---
+title: "Indoor Positioning System Report"
+author: "Wasabees"
+date: "2023-12-08"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+\newpage
+
+# Executive Summary
+
+This project summarizes the findings and recommendations of an indoor positioning system (IPS) using Wi-Fi strength signals. 
+The primary objective is to implement a robust model that can accurately predict the location of a device connected to the local Wi-Fi network. We implemented two supervised machine learning methods (XGBoost and K-Nearest Neighbors) to create two separate models. Notably, the two models have predictive skills, but smaller errors correspond to XGBoost. This last approach also has the advantage of being computationally efficient.
+
+Our recommendations to improve the accuracy of the models without incurring additional costs include optimizing the location of the routers throughout the floor plan to ensure an even distribution of the signals.  
+
+
+\newpage
+
+# Introduction and Background
+
+Indoor position systems (IPS) development is an active area of research that can be used in numerous settings. An area of interest is the use of using signal strength from Wi-Fi routers to estimate the location of a device. 
+
+**I = In this section, get right to describing the main questions to be answered and the goals behind the consulting project taken on. You can put some relevant background information here, but don’t spend too much space on it (that should go in the next section). You want just to give readers a taste of what’s to come. Also, it’s a good idea to summarize your conclusions in this section, so that clients will know what to look for as they read.**
+
+**B = This section should contain background information for your readers. This is used to paraphrase the problem you that you tackled, relevant issues present in the analysis that will be dealt with. Also, define any technical terms needed for the remainder of the paper. Don’t include technical terms if you don’t use them later. That hurts clarity. This is the appropriate section for references related to the background of your problem and discussion of other, related analyses. That is, you can provide some information on authors that have addressed similar problems and how they went about finding a solution to them.**
+
+
+
+\newpage
+
+# Data
+
+
+The following section, describes and characterizes the data set provided by the client. 
+
+The client gridded 540 m^2^ of their building into 166, 1-meter-by-1-meter cells in which measurements of signal strength from 6 access points (Wi-Fi routers) were obtained from a handheld device connected to a local Wi-Fi network. The data are subdivided into two sub-sets, “offline” and “online”, distinguished by the fact that the offline data set was sampled at fixed locations and orientations, versus the online data set that was sampled at random locations and orientations.
+
+The offline data, intended to train a model, was collected at all the 166 fixed points within the grid. At each location, the device was oriented in 45-degree increments, starting from 0 up to 360 degrees, resulting in 8 angles (i.e., 0, 45, 90, 135, 180, 225, 270, and 315). Signal strength for the access points was measured for each orientation a total of 110 times, totaling 880 samples per location and a total of 146,080 observations.
+
+The online data was designed to simulate real-world data, where devices are held at random orientations and are not bound to the center of a grid point. 60 locations were randomly selected and the device was then oriented at a random angle. Similarly, to the offline data set, signal strength for the access points was measured 110 times, resulting in a total of 6600 observations in total.
+
+More details of the floor plan can be seen in Figure 1. Note the gridded area is confined to locations outside the rooms. 
+
+```{r fig_1, fig.align = "center", fig.cap= 'Floor plan of the client’s building where the data was collected. Dots mark the locations for the data sampling. Black dots correspond to the offline locations, and grey dots correspond to the online data locations. Black squares are the 6 access points in the building.', out.width="50%", out.height="50%"}
+
+knitr::include_graphics("floorplan.jpg") 
+
+```
+
+
+The data is composed by 8 number of variables from which, after data exploration (see Data Exploration report for more details), we keep:
+
+1) Orientation: The scanning device’s orientation at binned 45 degrees increments.
+2) Mac: The IP address of the access points.
+3) Signal: Signal strength in decibel-milliwatts.
+4) PosX and PosY: x and y coordenates in the grid.
+
+The data exploration also reveals an inverse relationship between signal strength and distance to an access point (Fig 2).
+
+```{r fig_2, echo=FALSE, message = FALSE,  echo=FALSE, message =FALSE, fig.align = "center", fig.cap= 'Scatter-plot of signal vs distance grouped by access point. Signal strength is inversely related to distance. Some access point have consistent lower signal strengths', out.width="100%", out.height="100%", warning=FALSE, message =FALSE}
+
+
+knitr::include_graphics("scatter_plot_signal_distance.png") 
+
+```
+
+\newpage
+
+
+# Methods
+
+We develop the IPS using two supervised machine learning (ML) algorithms: eXtreme Gradient Boosting (XGBoost) and K-Nearest Neighbors (KNN). In supervised machine learning, algorithms are trained with labeled examples to find patterns in the input data. To put it simply, we train models that take values for strength signal, orientation and relative position to access points to predict a location in the grid. Each location in the data set is characterized by a combination of values for strength signal and device orientation that can be used to train a model able to find and generalize these patterns. In order to train a model that can find and then generalize these patterns, we use the mean values for signal strength on each orientation on the offline data set. 
+
+An important aspect of supervised machine learning is reserving part of the data to validate and quantify the accuracy of the models, in this case, we utilize the totality of the offline data to train the model, and the online to test it. 
+
+The following sections briefly describe the algorithms utilized. 
+
+## K-Nearest Neighbors
+
+This approach, in broad terms, asigns a value for latitude and longitude based on the similarity of the testing point to others in the training data set. Specifically, K in K-Nearest Neighbors refers to the number "k" of similar data points. This similarity or proximity is evaluated based on the unique characteristics of the neighbors. For example, we would expect a data point located at the margins of the building to have on average a weaker signal strength creating a unique fingerprint for each location. 
+Although this algorithm can be highly accurate, is also sensitive to noisy data and its computational costs increase rapidly in large data sets.
+
+
+## XGBoost
+
+XGBoost is a very powerful ML algorithm that creates predicted values by creating a series of decision trees (See Chen and Guestrin, 2016 for more information). This means that the final predicted value is a combination of the values found per tree. One of the advantages of using XGBoost in this study is the capacity of handling large data sets and high accuracy. 
+
+
+\newpage
+
+
+# Results
+
+
+\newpage
+
+# Conclusions and Recommendations
+
+**In this section, you discuss the broad implications of your investigation. Explain what the results you obtained mean in terms of the questions the client posed and goals of the project. Be explicit about answering the consulting questions. Nonetheless, you can discuss issues that merit further exploration, interesting relationships among variables that are not quite central to answering the questions that might be things the client could look into. Importantly mention reservations about the analyses that you think may require more complex modeling, either due to modeling assumptions not holding, or by discoveries made along the process of analyzing the data that might hinder the validity of your conclusions.**
+
+\newpage
+
+# References
+
+\newpage
+
+# Appendix
+
