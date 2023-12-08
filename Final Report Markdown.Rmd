@@ -14,26 +14,28 @@ knitr::opts_chunk$set(echo = FALSE)
 
 \newpage
 
-# Executive Summary
+# 1. Executive Summary
 
 This project summarizes the findings and recommendations of an indoor positioning system (IPS) using Wi-Fi strength signals. 
-The primary objective is to implement a robust model that can accurately predict the location of a device connected to the local Wi-Fi network. We implemented two supervised machine learning methods (XGBoost and K-Nearest Neighbors) to create two separate models. Notably, the two models have predictive skills, but smaller errors correspond to XGBoost. This last approach also has the advantage of being computationally efficient.
 
-Our recommendations to improve the accuracy of the models without incurring additional costs include optimizing the location of the routers throughout the floor plan to ensure an even distribution of the signals.  
+The primary objective is to implement a robust model that can accurately predict the location of a device connected to the local Wi-Fi network. We implemented two supervised machine learning methods (XGBoost and K-Nearest Neighbors) to create two separate models. Notably, both models show predictive skills with a mean error under 2.5 meters for K-Nearest Neighbors, and 1.7 for XGBoost. Not only XGBoost demonstrated to have better accuracy in the predictions, but has also the advantage of being computationally efficient. Further accuracy can be obtained by optimizing the location of the routers inside the building to ensure an even distribution of the signals. This recommendation is easy and cost-effective to implement. 
 
 
-\newpage
+# 2. Introduction and Background
 
-# Introduction and Background
+Indoor position systems (IPS) development is an active area of research with multiple applications ranging from medical settings to security. Problems associated with tracking indoor location include low accuracy from traditional GPS systems due to problems in signal propagation [cita doc. in folder], and _______. An alternative comes from using Wi-Fi signal strength to triangulate the position of a device. The existence of numerous public and private Wi-Fi networks in buildings, makes this approach highly practical. Limitations to this approach include the decreasing strength as the device moves away from the source, the high sensitivity of the orientation of the device to the reception of Wi-Fi signals [https://ieeexplore.ieee.org/document/8643441], and noise introduced by other access points [insert citation].
 
-Indoor position systems (IPS) development is an active area of research that can be used in numerous settings. An area of interest is the use of using signal strength from Wi-Fi routers to estimate the location of a device. 
 
-**I = In this section, get right to describing the main questions to be answered and the goals behind the consulting project taken on. You can put some relevant background information here, but don’t spend too much space on it (that should go in the next section). You want just to give readers a taste of what’s to come. Also, it’s a good idea to summarize your conclusions in this section, so that clients will know what to look for as they read.**
+
+
 
 **B = This section should contain background information for your readers. This is used to paraphrase the problem you that you tackled, relevant issues present in the analysis that will be dealt with. Also, define any technical terms needed for the remainder of the paper. Don’t include technical terms if you don’t use them later. That hurts clarity. This is the appropriate section for references related to the background of your problem and discussion of other, related analyses. That is, you can provide some information on authors that have addressed similar problems and how they went about finding a solution to them.**
 
 
-# Data
+
+\newpage
+
+# 3. Data
 
 
 The following section, describes and characterizes the data set provided by the client. 
@@ -54,8 +56,6 @@ knitr::include_graphics("floorplan.jpg")
 
 The online data was designed to simulate real-world data, where devices are held at random orientations and are not bound to the center of a grid point. 60 locations were randomly selected and the device was then oriented at a random angle. Similarly, to the offline data set, signal strength for the access points was measured 110 times, resulting in a total of 6600 observations in total.
 
-
-\newpage
 
 The data is composed by 8 variables from which we remove those with redundant or non-relevant information after the data exploration and only keep:
 
@@ -82,7 +82,7 @@ knitr::include_graphics("boxplot.png")
 \newpage
 
 
-# Methods
+# 4. Methods
 
 We develop the IPS using two supervised machine learning (ML) algorithms: eXtreme Gradient Boosting (XGBoost) and K-Nearest Neighbors (KNN). In supervised machine learning, algorithms are trained with labeled examples to find patterns in the input data. To put it simply, we train models that take values for strength signal, orientation and relative position to access points to predict a location in the grid. Each location in the data set is characterized by a combination of values for strength signal and device orientation that can be used to train a model able to find and generalize these patterns. In order to train a model that can find and then generalize these patterns, we use the mean values for signal strength on each orientation on the offline data set. 
 
@@ -90,13 +90,13 @@ An important aspect of supervised machine learning is reserving part of the data
 
 The following sections briefly describe the algorithms utilized. 
 
-## K-Nearest Neighbors
+## 4.1 K-Nearest Neighbors
 
 This approach, in broad terms, asigns a value for latitude and longitude based on the similarity of the testing point to others in the training data set. Specifically, K in K-Nearest Neighbors refers to the number "k" of similar data points. This similarity or proximity is evaluated based on the unique characteristics of the neighbors. For example, we would expect a data point located at the margins of the building to have on average a weaker signal strength creating a unique fingerprint for each location. 
 Although this algorithm can be highly accurate, is also sensitive to noisy data and its computational costs increase rapidly in large data sets.
 
 
-## XGBoost
+## 4.2 XGBoost
 
 XGBoost is a very powerful ML algorithm that creates predicted values by creating a series of decision trees (See Chen and Guestrin, 2016 for more information). This means that the final predicted value is a combination of the values found per tree. One of the advantages of using XGBoost in this study is the capacity of handling large data sets and high accuracy. 
 
@@ -104,10 +104,14 @@ XGBoost is a very powerful ML algorithm that creates predicted values by creatin
 \newpage
 
 
-# Results
+# 5. Results
 
 
-Both models created by XGBoost (Fig. 4) and KNN (Fig. 5) show predictive skills. Both approaches show more robust predictions on the left side of the floor plan. The errors in the predictions for XGBoost and KNN represented by black lines in the figures below are on average 1.7 meters and 2.5 meters demonstrating the high accuracy of both methods to predict location. As expected, KNN is more heavily influenced by the number of adjacent training points. The center of the building is characterized by a higher density of training points in the grid, resulting in the algorithm predicting center values more accurately than those at the far end of the gridded training points. Another influence seems to be the geospatial location of the access points. The west side of the building contains more equally distributed routers. This reduced distance between the testing point and the router results in a stronger strength signal and therefore, allows the algorithm to better triangulate the location. This decrease in distance, and therefore signal strength, also results in potential noise taking over the wanted signal.  Similarly, XGBoost is also influenced by this higher-error on the east trend.
+Both models created by XGBoost (Fig. 4) and KNN (Fig. 5) show predictive skills. Both approaches show more robust predictions on the left side of the floor plan. The errors in the predictions for XGBoost and KNN represented by black lines in the figures below are on average 1.7 meters and 2.5 meters (Appendix A) demonstrating the high accuracy of both methods to predict location. 
+
+As expected, KNN is more heavily influenced by the number of adjacent training points. The center of the building is characterized by a higher density of training points in the grid, resulting in the algorithm predicting center values more accurately than those at the far end of the gridded training points. Another influence seems to be the geospatial location of the access points. The west side of the building contains more equally distributed routers. This reduced distance between the testing point and the router results in a stronger strength signal and therefore, allows the algorithm to better triangulate the location. This decrease in distance, and therefore signal strength, also results in potential noise taking over the wanted signal. Similarly, XGBoost is also influenced by this higher-error on the east trend, but to a less extend. The algorithm seems more robust in finding patters when data is sparsely distributed. 
+
+This issues with high-error predictions might be mitigated by addressing the location of the routers and including a more equally distributed grid. This is a cost-effective way of potentially reducing the error.
 
 
 ```{r r fig_4, echo=FALSE, message =FALSE, fig.align = "center", fig.cap= 'XGBoost Prediction Map. Green dots correspond to real locations for the testing (online) data. Red dots are the predicted locations by XGBoost. Black squuares correspond to 6 access points. The error between predictions and real value is represented by black lines.', out.width="100%", out.height="40%", warning=FALSE, message =FALSE}
@@ -122,11 +126,17 @@ knitr::include_graphics("knn_pred_locs_lines.png")
 
 ```
 
+
 \newpage
+
 
 # Conclusions and Recommendations
 
-**In this section, you discuss the broad implications of your investigation. Explain what the results you obtained mean in terms of the questions the client posed and goals of the project. Be explicit about answering the consulting questions. Nonetheless, you can discuss issues that merit further exploration, interesting relationships among variables that are not quite central to answering the questions that might be things the client could look into. Importantly mention reservations about the analyses that you think may require more complex modeling, either due to modeling assumptions not holding, or by discoveries made along the process of analyzing the data that might hinder the validity of your conclusions.**
+
+Both approaches studied offer highly accurate predictions and offer cost-effective alternatives for indoor positioning systems. The wide-spread use of public Wi-Fi signals is an advantage over other signal detection systems, such as Bluetooth. Areas that are closer to access point will be more accurately predicted. If a close monitoring of a device, such as expensive medical equipment, is required, it's suggested that is kept at the proximities of a remote access point. It's important to note the small scale of the study, confined into a 36 by 15 meter area. Further studies are required to understand the robustness of the models in areas with higher room density, and less routers. Another potential source of bias is the use of mean values to create these models, because they might not be representative of the overall signal signature by location. The use of mean values reduced significantly the number of training points, making the models less generalizable. 
+
+The general distribution of signal strength for these study included various points that had to be removed due to noise of nearby routers. This excluded points might've included important information that was lost. Better ways of cleaning noisy data and finding valuable patterns in the data set might be expanded to include un-labeled (unsupervised) machine learning.
+
 
 \newpage
 
@@ -134,5 +144,17 @@ knitr::include_graphics("knn_pred_locs_lines.png")
 
 \newpage
 
-# Appendix
+# Appendices
+
+## Appendix A: Individual Prediction Errors 
+
+The mean average error (MAE) is used to compare the general performance of the two approaches. Table A1 shows a more detailed view of the predicted and true values by cell. 
+
+
+```{r appendix_A, echo=FALSE}
+
+xgboost_results = read.csv("XGB_predictions.csv")
+knn_results = read.csv("KNN_predictions.csv")
+
+```
 
