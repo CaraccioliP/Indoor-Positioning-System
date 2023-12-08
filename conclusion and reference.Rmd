@@ -4,4 +4,5 @@ The decrease in the distribution of signal strength indicates a linear decline c
 
 # Reference
 [1] Chen, T.Q. and Guestrin, C. (2016) Xgboost: A Scalable Tree Boosting System. Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, San Francisco, 13-17 August 2016, 785-794. https://doi.org/10.1145/2939672.2939785
-[2] Pros and Cons of k-NN, https://kevinzakka.github.io/2016/07/13/k-nearest-neighbor/#pros-and-cons-of-knn
+[2] Nolan, D. A., & Lang, D. T. (2015). Data science in R : a case studies approach to computational reasoning and problem solving / Deborah Nolan, University of California, Berkeley, USA, Duncan Temple Lang, University of California, Davis, USA. CRC Press.
+[3] Pros and Cons of k-NN, https://kevinzakka.github.io/2016/07/13/k-nearest-neighbor/#pros-and-cons-of-knn
