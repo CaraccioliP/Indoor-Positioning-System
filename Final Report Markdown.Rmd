@@ -3,6 +3,9 @@ title: "Indoor Positioning System Report"
 author: "Wasabees"
 date: "2023-12-08"
 output: pdf_document
+header-includes:
+   - \usepackage{caption}
+   - \captionsetup[figure]{font=small, format=hang, labelfont = bf}
 ---
 
 ```{r setup, include=FALSE}
@@ -30,42 +33,49 @@ Indoor position systems (IPS) development is an active area of research that can
 **B = This section should contain background information for your readers. This is used to paraphrase the problem you that you tackled, relevant issues present in the analysis that will be dealt with. Also, define any technical terms needed for the remainder of the paper. Don’t include technical terms if you don’t use them later. That hurts clarity. This is the appropriate section for references related to the background of your problem and discussion of other, related analyses. That is, you can provide some information on authors that have addressed similar problems and how they went about finding a solution to them.**
 
 
-
-\newpage
-
 # Data
 
 
 The following section, describes and characterizes the data set provided by the client. 
 
-The client gridded 540 m^2^ of their building into 166, 1-meter-by-1-meter cells in which measurements of signal strength from 6 access points (Wi-Fi routers) were obtained from a handheld device connected to a local Wi-Fi network. The data are subdivided into two sub-sets, “offline” and “online”, distinguished by the fact that the offline data set was sampled at fixed locations and orientations, versus the online data set that was sampled at random locations and orientations.
+The client gridded 540 m^2^ of their building into 166, 1-meter-by-1-meter cells in which measurements of signal strength from 6 access points (Wi-Fi routers) were obtained from a handheld device connected to a local Wi-Fi network (Fig. 1). The data are subdivided into two sub-sets, “offline” and “online”, distinguished by the fact that the offline data set was sampled at fixed locations and orientations, versus the online data set that was sampled at random locations and orientations.
 
 The offline data, intended to train a model, was collected at all the 166 fixed points within the grid. At each location, the device was oriented in 45-degree increments, starting from 0 up to 360 degrees, resulting in 8 angles (i.e., 0, 45, 90, 135, 180, 225, 270, and 315). Signal strength for the access points was measured for each orientation a total of 110 times, totaling 880 samples per location and a total of 146,080 observations.
 
-The online data was designed to simulate real-world data, where devices are held at random orientations and are not bound to the center of a grid point. 60 locations were randomly selected and the device was then oriented at a random angle. Similarly, to the offline data set, signal strength for the access points was measured 110 times, resulting in a total of 6600 observations in total.
 
-More details of the floor plan can be seen in Figure 1. Note the gridded area is confined to locations outside the rooms. 
 
-```{r fig_1, fig.align = "center", fig.cap= 'Floor plan of the client’s building where the data was collected. Dots mark the locations for the data sampling. Black dots correspond to the offline locations, and grey dots correspond to the online data locations. Black squares are the 6 access points in the building.', out.width="50%", out.height="50%"}
+```{r fig_1, fig.align = "center", fig.cap= 'Floor plan of the client’s building where the data was collected. Dots mark the locations for the data sampling. Black dots correspond to the offline locations, and grey dots correspond to the online data locations. Black squares are the 6 access points in the building. Note the gridded area is confined to locations outside the rooms.', out.width="50%", out.height="50%"}
 
 knitr::include_graphics("floorplan.jpg") 
 
 ```
 
 
-The data is composed by 8 number of variables from which, after data exploration (see Data Exploration report for more details), we keep:
+
+The online data was designed to simulate real-world data, where devices are held at random orientations and are not bound to the center of a grid point. 60 locations were randomly selected and the device was then oriented at a random angle. Similarly, to the offline data set, signal strength for the access points was measured 110 times, resulting in a total of 6600 observations in total.
+
+
+\newpage
+
+The data is composed by 8 variables from which we remove those with redundant or non-relevant information after the data exploration and only keep:
 
 1) Orientation: The scanning device’s orientation at binned 45 degrees increments.
 2) Mac: The IP address of the access points.
 3) Signal: Signal strength in decibel-milliwatts.
 4) PosX and PosY: x and y coordenates in the grid.
 
-The data exploration also reveals an inverse relationship between signal strength and distance to an access point (Fig 2).
+The data exploration also reveals an inverse relationship between signal strength and distance to an access point (Fig 2), and the influence of orienttion on signal strength (Fig. 3).
 
 ```{r fig_2, echo=FALSE, message = FALSE,  echo=FALSE, message =FALSE, fig.align = "center", fig.cap= 'Scatter-plot of signal vs distance grouped by access point. Signal strength is inversely related to distance. Some access point have consistent lower signal strengths', out.width="100%", out.height="100%", warning=FALSE, message =FALSE}
 
 
 knitr::include_graphics("scatter_plot_signal_distance.png") 
+
+```
+
+```{r r fig_3, echo=FALSE, message =FALSE, fig.align = "center", fig.cap= 'Box-plot of signal strength depending on orientation, grouped by access point at a random location', out.width="100%", out.height="40%", warning=FALSE, message =FALSE}
+
+knitr::include_graphics("boxplot.png") 
 
 ```
 
@@ -96,6 +106,21 @@ XGBoost is a very powerful ML algorithm that creates predicted values by creatin
 
 # Results
 
+
+Both models created by XGBoost (Fig. 4) and KNN (Fig. 5) show predictive skills. Both approaches show more robust predictions on the left side of the floor plan. The errors in the predictions for XGBoost and KNN represented by black lines in the figures below are on average 1.7 meters and 2.5 meters demonstrating the high accuracy of both methods to predict location. As expected, KNN is more heavily influenced by the number of adjacent training points. The center of the building is characterized by a higher density of training points in the grid, resulting in the algorithm predicting center values more accurately than those at the far end of the gridded training points. Another influence seems to be the geospatial location of the access points. The west side of the building contains more equally distributed routers. This reduced distance between the testing point and the router results in a stronger strength signal and therefore, allows the algorithm to better triangulate the location. This decrease in distance, and therefore signal strength, also results in potential noise taking over the wanted signal.  Similarly, XGBoost is also influenced by this higher-error on the east trend.
+
+
+```{r r fig_4, echo=FALSE, message =FALSE, fig.align = "center", fig.cap= 'XGBoost Prediction Map. Green dots correspond to real locations for the testing (online) data. Red dots are the predicted locations by XGBoost. Black squuares correspond to 6 access points. The error between predictions and real value is represented by black lines.', out.width="100%", out.height="40%", warning=FALSE, message =FALSE}
+
+knitr::include_graphics("pred_locs_lines.png") 
+
+```
+
+```{r r fig_5, echo=FALSE, message =FALSE, fig.align = "center", fig.cap= 'K-Nearest Neighbor Prediction Map. Green dots correspond to real locations for the testing (online) data. Red dots are the predicted locations by XGBoost. Black squuares correspond to 6 access points. The error between predictions and real value is represented by black lines.', out.width="100%", out.height="40%", warning=FALSE, message =FALSE}
+
+knitr::include_graphics("knn_pred_locs_lines.png") 
+
+```
 
 \newpage
 
