@@ -3,6 +3,7 @@ title: "Indoor Positioning System Report"
 author: "Wasabees"
 date: "2023-12-08"
 output: pdf_document
+fontsize: 12pt 
 header-includes:
    - \usepackage{caption}
    - \captionsetup[figure]{font=small, format=hang, labelfont = bf}
@@ -21,16 +22,20 @@ This project summarizes the findings and recommendations of an indoor positionin
 The primary objective is to implement a robust model that can accurately predict the location of a device connected to the local Wi-Fi network. We implemented two supervised machine learning methods (XGBoost and K-Nearest Neighbors) to create two separate models. Notably, both models show predictive skills with a mean error under 2.5 meters for K-Nearest Neighbors, and 1.7 for XGBoost. Not only XGBoost demonstrated to have better accuracy in the predictions, but has also the advantage of being computationally efficient. Further accuracy can be obtained by optimizing the location of the routers inside the building to ensure an even distribution of the signals. This recommendation is easy and cost-effective to implement. 
 
 
+\newpage
+
 # 2. Introduction and Background
 
-Indoor position systems (IPS) development is an active area of research with multiple applications ranging from medical settings to security. Problems associated with tracking indoor location include low accuracy from traditional GPS systems due to problems in signal propagation [cita doc. in folder], and _______. An alternative comes from using Wi-Fi signal strength to triangulate the position of a device. The existence of numerous public and private Wi-Fi networks in buildings, makes this approach highly practical. Limitations to this approach include the decreasing strength as the device moves away from the source, the high sensitivity of the orientation of the device to the reception of Wi-Fi signals [https://ieeexplore.ieee.org/document/8643441], and noise introduced by other access points [insert citation].
+Indoor position systems (IPS) development is an active area of research with multiple applications ranging from medical settings to security. Problems associated with tracking indoor location include low accuracy from traditional GPS systems due to problems in signal propagation^[1]^. An alternative comes from using Wi-Fi signal strength to triangulate the position of a device. The existence of numerous public and private Wi-Fi networks in buildings, makes this approach highly practical.
 
 
+Limitations to this approach include the decreasing strength as the device moves away from the source, the high sensitivity of the orientation of the device to the reception of Wi-Fi signals^[2]^, and noise introduced by other access points. Other facotrs include building layouts and construction material. 
 
+Specifically for orientation, some positions allow for a direct line of connectivity between the router and the receiver, while others, the user's body might form an obstruction^[3]^.
 
+The problem to solve to develop an IPS can be summarized as the following question: "Given a set of signatures (signal strength) from nearby Wi-Fi routers at a given device orinetation, and considering the decay of the distance with signal, what's the location?. 
 
-**B = This section should contain background information for your readers. This is used to paraphrase the problem you that you tackled, relevant issues present in the analysis that will be dealt with. Also, define any technical terms needed for the remainder of the paper. Don’t include technical terms if you don’t use them later. That hurts clarity. This is the appropriate section for references related to the background of your problem and discussion of other, related analyses. That is, you can provide some information on authors that have addressed similar problems and how they went about finding a solution to them.**
-
+This type of problem, in which the desired outcome, in this case location, is explicitly stated as some part of the dataset, allows the use of supervised machine learning (SML). SML to put it simply, takes features from the data (variables believe to have a relationship with the response), to predict the answer. In this case, we use features such as signal strength and orientation to predict positions x, y in the grid. To validate and test a model the data is typically divided into "training data" and "testing data". Training data is used to develop a model that can predict location and then, its accuracy with unseen data is assessed with the testing data. A high accuracy in the training data and low on the testing means that the model is not able to find general patterns applicable to other observations. This level of accuracy can also be understood as one that minimizes the error between the values predicted by the model and the real ones.The average difference of this error is known as Mean Average Error (MAE), which we use to validate our model. Because this metric is measuring the difference between the predicted values and the real values, a good model will have a low MAE.
 
 
 \newpage
@@ -107,30 +112,28 @@ XGBoost is a very powerful ML algorithm that creates predicted values by creatin
 # 5. Results
 
 
-Both models created by XGBoost (Fig. 4) and KNN (Fig. 5) show predictive skills. Both approaches show more robust predictions on the left side of the floor plan. The errors in the predictions for XGBoost and KNN represented by black lines in the figures below are on average 1.7 meters and 2.5 meters (Appendix A) demonstrating the high accuracy of both methods to predict location. 
-
-As expected, KNN is more heavily influenced by the number of adjacent training points. The center of the building is characterized by a higher density of training points in the grid, resulting in the algorithm predicting center values more accurately than those at the far end of the gridded training points. Another influence seems to be the geospatial location of the access points. The west side of the building contains more equally distributed routers. This reduced distance between the testing point and the router results in a stronger strength signal and therefore, allows the algorithm to better triangulate the location. This decrease in distance, and therefore signal strength, also results in potential noise taking over the wanted signal. Similarly, XGBoost is also influenced by this higher-error on the east trend, but to a less extend. The algorithm seems more robust in finding patters when data is sparsely distributed. 
-
-This issues with high-error predictions might be mitigated by addressing the location of the routers and including a more equally distributed grid. This is a cost-effective way of potentially reducing the error.
+Both models created by XGBoost (Fig. 4) and KNN (Fig. 5) show predictive skills. Both approaches show more robust predictions on the left side of the floor plan. The errors in the predictions for XGBoost and KNN are represented by black lines in the figures below are on average 1.7 meters and 2.5 meters (Appendix A) demonstrating the high accuracy of both methods to predict location. 
 
 
-```{r r fig_4, echo=FALSE, message =FALSE, fig.align = "center", fig.cap= 'XGBoost Prediction Map. Green dots correspond to real locations for the testing (online) data. Red dots are the predicted locations by XGBoost. Black squuares correspond to 6 access points. The error between predictions and real value is represented by black lines.', out.width="100%", out.height="40%", warning=FALSE, message =FALSE}
+```{r r fig_4, echo=FALSE, message =FALSE, fig.align = "center", fig.cap= 'XGBoost Prediction Map. Green dots correspond to real locations for the testing (online) data. Red dots are the predicted locations by XGBoost. Black squares correspond to 6 access points. The error between predictions and real value is represented by black lines.', out.width="100%", out.height="50%", warning=FALSE, message =FALSE}
 
 knitr::include_graphics("pred_locs_lines.png") 
-
 ```
+As expected, KNN is more heavily influenced by the number of adjacent training points. The center of the building is characterized by a higher density of training points in the grid, resulting in the algorithm predicting center values more accurately than those at the far end of the gridded training points. Another influence seems to be the geospatial location of the access points. The west side of the building contains more equally distributed routers. This reduced distance between the testing point and the router results in a stronger strength signal and therefore, allows the algorithm to better triangulate the location. This decrease in distance, and therefore signal strength, also results in potential noise taking over the wanted signal. Similarly, XGBoost is also influenced by this higher-error on the east trend, but to a less extend. The algorithm seems more robust in finding patters when data is sparsely distributed. 
 
-```{r r fig_5, echo=FALSE, message =FALSE, fig.align = "center", fig.cap= 'K-Nearest Neighbor Prediction Map. Green dots correspond to real locations for the testing (online) data. Red dots are the predicted locations by XGBoost. Black squuares correspond to 6 access points. The error between predictions and real value is represented by black lines.', out.width="100%", out.height="40%", warning=FALSE, message =FALSE}
+
+```{r r fig_5, echo=FALSE, message =FALSE, fig.align = "center", fig.cap= 'K-Nearest Neighbor Prediction Map. Green dots correspond to real locations for the testing (online) data. Red dots are the predicted locations by XGBoost. Black squares correspond to 6 access points. The error between predictions and real value is represented by black lines.', out.width="100%", out.height="50%", warning=FALSE, message =FALSE}
 
 knitr::include_graphics("knn_pred_locs_lines.png") 
-
 ```
+
+This issues with high-error predictions might be mitigated by addressing the location of the routers and including a more equally distributed grid. This is a cost-effective way of potentially reducing the error.
 
 
 \newpage
 
 
-# Conclusions and Recommendations
+# 6. Conclusions and Recommendations
 
 
 Both approaches studied offer highly accurate predictions and offer cost-effective alternatives for indoor positioning systems. The wide-spread use of public Wi-Fi signals is an advantage over other signal detection systems, such as Bluetooth. Areas that are closer to access point will be more accurately predicted. If a close monitoring of a device, such as expensive medical equipment, is required, it's suggested that is kept at the proximities of a remote access point. It's important to note the small scale of the study, confined into a 36 by 15 meter area. Further studies are required to understand the robustness of the models in areas with higher room density, and less routers. Another potential source of bias is the use of mean values to create these models, because they might not be representative of the overall signal signature by location. The use of mean values reduced significantly the number of training points, making the models less generalizable. 
@@ -140,7 +143,14 @@ The general distribution of signal strength for these study included various poi
 
 \newpage
 
-# References
+# 7. References
+
+[1] Hromadova, Veronika & Machaj, Juraj & Brida, Peter. (2021). Impact of user orientation on indoor localization based on Wi-Fi. Transportation Research Procedia. 55. 882-889. 10.1016/j.trpro.2021.07.056. 
+
+[2] Li, You & He, Zhe & Li, Yuqi & Gao, Zhouzheng & Chen, Ruizhi & El-Sheimy, Naser. (2019). Enhanced Wireless Localization Based on Orientation-Compensation Model and Differential Received Signal Strength. IEEE Sensors Journal. PP. 1-1. 10.1109/JSEN.2019.2899895. 
+
+[3] P. Bahl and V. N. Padmanabhan, "RADAR: an in-building RF-based user location and tracking system," Proceedings IEEE INFOCOM 2000. Conference on Computer Communications. Nineteenth Annual Joint Conference of the IEEE Computer and Communications Societies, Tel Aviv, Israel, 2000, pp. 775-784 vol.2, doi: 10.1109/INFCOM.2000.832252.
+
 
 \newpage
 
