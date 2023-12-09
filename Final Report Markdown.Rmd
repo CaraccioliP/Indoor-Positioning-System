@@ -48,17 +48,11 @@ The following section, describes and characterizes the data set provided by the 
 The client gridded 540 m^2^ of their building into 166, 1-meter-by-1-meter cells in which measurements of signal strength from 6 access points (Wi-Fi routers) were obtained from a handheld device connected to a local Wi-Fi network (Fig. 1). The data are subdivided into two sub-sets, “offline” and “online”, distinguished by the fact that the offline data set was sampled at fixed locations and orientations, versus the online data set that was sampled at random locations and orientations.
 
 The offline data, intended to train a model, was collected at all the 166 fixed points within the grid. At each location, the device was oriented in 45-degree increments, starting from 0 up to 360 degrees, resulting in 8 angles (i.e., 0, 45, 90, 135, 180, 225, 270, and 315). Signal strength for the access points was measured for each orientation a total of 110 times, totaling 880 samples per location and a total of 146,080 observations.
-
-
-
 ```{r fig_1, fig.align = "center", fig.cap= 'Floor plan of the client’s building where the data was collected. Dots mark the locations for the data sampling. Black dots correspond to the offline locations, and grey dots correspond to the online data locations. Black squares are the 6 access points in the building. Note the gridded area is confined to locations outside the rooms.', out.width="50%", out.height="50%"}
 
 knitr::include_graphics("floorplan.jpg") 
 
 ```
-
-
-
 The online data was designed to simulate real-world data, where devices are held at random orientations and are not bound to the center of a grid point. 60 locations were randomly selected and the device was then oriented at a random angle. Similarly, to the offline data set, signal strength for the access points was measured 110 times, resulting in a total of 6600 observations in total.
 
 
@@ -103,7 +97,7 @@ Although this algorithm can be highly accurate, is also sensitive to noisy data 
 
 ## 4.2 XGBoost
 
-XGBoost is a very powerful ML algorithm that creates predicted values by creating a series of decision trees (See Chen and Guestrin, 2016 for more information). This means that the final predicted value is a combination of the values found per tree. One of the advantages of using XGBoost in this study is the capacity of handling large data sets and high accuracy. 
+XGBoost is a very powerful ML algorithm that creates predicted values by creating a series of decision trees^[4]^. This means that the final predicted value is a combination of the values found per tree. One of the advantages of using XGBoost in this study is the capacity of handling large data sets and high accuracy. 
 
 
 \newpage
@@ -151,20 +145,53 @@ The general distribution of signal strength for these study included various poi
 
 [3] P. Bahl and V. N. Padmanabhan, "RADAR: an in-building RF-based user location and tracking system," Proceedings IEEE INFOCOM 2000. Conference on Computer Communications. Nineteenth Annual Joint Conference of the IEEE Computer and Communications Societies, Tel Aviv, Israel, 2000, pp. 775-784 vol.2, doi: 10.1109/INFCOM.2000.832252.
 
+[4] Chen, T., and Guestrin, C. (2016). XBGoost: A Scalable Tree Boosting System. KDD '16: Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, San Francisco, California, United States. 
 
 \newpage
 
 # Appendices
 
-## Appendix A: Individual Prediction Errors 
+## Appendix A: Individual and General Prediction Errors 
 
-The mean average error (MAE) is used to compare the general performance of the two approaches. Table A1 shows a more detailed view of the predicted and true values by cell. 
+The mean average error (MAE) is used to compare the general performance of the two approaches. 
 
+Table A1 shows the MAE for XGBoost and KNN on x and y-axis. 
 
-```{r appendix_A, echo=FALSE}
+A more detailed view of the predicted and true values by cells for XGBoost (Table A2), and KNN (Table 3) demonstrate the high bias in some predicted locations. 
+
+\captionsetup[table]{labelformat=empty}
+```{r appendix_A, echo=FALSE, warning=FALSE}
+
+library(kableExtra)
 
 xgboost_results = read.csv("XGB_predictions.csv")
 knn_results = read.csv("KNN_predictions.csv")
 
+row_sum_xgb = colSums(xgboost_results)/60
+row_sum_knn = colSums(knn_results)/60
+row_sum_knn  = row_sum_knn[6:7]
+row_sum_xgb = row_sum_xgb[6:7]
+
+df_error = data.frame( KNN = c(row_sum_knn[1], row_sum_knn[2]), 
+                       XGB = c(row_sum_xgb[1], row_sum_xgb[2]))
+
+total_mae = data.frame(KNN = ((row_sum_knn[1] + row_sum_knn[2])/2), 
+                       XGB =(row_sum_xgb[1] + row_sum_xgb[2])/2 )
+
+rownames(total_mae) = c("MAE")
+
+rownames(df_error) = c("Error X", "Error Y")
+
+t1 = kbl(df_error, caption = "Table A1: Error (MAE) on X and Y locations") %>% kable_classic(full_width = F, html_font = "Cambria", font_size = 10, position = "center") %>% kable_styling(latex_options = "hold_position")
+t2 = kbl(total_mae, caption = "Table A2: Total Error (MAE)", position="b") %>% kable_classic(full_width = F, html_font = "Cambria", font_size = 10) %>% kable_styling(latex_options = "hold_position")
+t3 = kbl(xgboost_results, caption = "Table A3: XGBoost model predicted and real locations", position="b") %>% kable_classic(full_width = F, html_font = "Cambria", font_size = 7) %>% kable_styling(latex_options = "hold_position")
+t4 = kbl(knn_results, caption = "Table A4: KNN model predicted and real locations", position="b") %>% kable_classic(full_width = F, html_font = "Cambria", font_size = 7) %>% kable_styling(latex_options = "hold_position")
+
+t1
+t2
+t3
+t4
 ```
+
+
 
